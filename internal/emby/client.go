@@ -3,6 +3,7 @@ package emby
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -85,4 +86,26 @@ func (c *Client) ImageURL(serverURL, token, itemID, tag string) string {
 	if tag == "" { return "" }
 	q := url.Values{"maxWidth":{"480"}, "quality":{"85"}, "tag":{tag}, "api_key":{token}}
 	return strings.TrimRight(serverURL, "/")+"/Items/"+url.PathEscape(itemID)+"/Images/Primary?"+q.Encode()
+}
+
+func (c *Client) Item(serverURL, token, userID, itemID string) (Item, error) {
+	var item Item
+	err := c.get(serverURL, token, "/Users/"+url.PathEscape(userID)+"/Items/"+url.PathEscape(itemID), nil, &item)
+	return item, err
+}
+
+func (c *Client) ImageBytes(serverURL, token, itemID, tag string) ([]byte, string, error) {
+	if tag == "" { return nil, "", fmt.Errorf("该项目没有主海报") }
+	q := url.Values{"maxWidth":{"720"}, "quality":{"88"}, "tag":{tag}}
+	u := strings.TrimRight(serverURL, "/")+"/Items/"+url.PathEscape(itemID)+"/Images/Primary?"+q.Encode()
+	req, err := http.NewRequest(http.MethodGet, u, nil)
+	if err != nil { return nil, "", err }
+	req.Header.Set("X-Emby-Token", token)
+	resp, err := c.http.Do(req)
+	if err != nil { return nil, "", err }
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 { return nil, "", fmt.Errorf("获取海报失败，HTTP %d", resp.StatusCode) }
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
+	if err != nil { return nil, "", err }
+	return data, resp.Header.Get("Content-Type"), nil
 }
