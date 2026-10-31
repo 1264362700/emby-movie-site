@@ -37,11 +37,34 @@ export default function App() {
  const [server,setServer]=useState(""); const [username,setUsername]=useState(""); const [password,setPassword]=useState("");
  const [busy,setBusy]=useState(false); const [connected,setConnected]=useState(""); const [error,setError]=useState("");
  const [home,setHome]=useState<HomeData|null>(null); const [loadingHome,setLoadingHome]=useState(false);
+ const [section,setSection]=useState<"home"|"Movie"|"Series"|"search">("home");
+ const [page,setPage]=useState<MediaPage|null>(null); const [pageIndex,setPageIndex]=useState(0); const [query,setQuery]=useState(""); const [searchInput,setSearchInput]=useState("");
+ const [detail,setDetail]=useState<MediaItem|null>(null); const [detailLoading,setDetailLoading]=useState(false);
  async function loadHome() {
   const api=window.go?.main?.App;if(!api)throw new Error("当前不是 Wails 桌面运行环境");
   setLoadingHome(true);
   try { const data=await api.LoadHome();setHome(data); }
   finally { setLoadingHome(false); }
+ }
+ async function browse(kind:"Movie"|"Series",start=0) {
+  const api=window.go?.main?.App;if(!api)throw new Error("当前不是 Wails 桌面运行环境");
+  setLoadingHome(true);setError("");
+  try {const result=await api.Browse(kind,"",start,30,"SortName","Ascending");setPage(result);setPageIndex(start);setSection(kind);}
+  catch(err){setError(err instanceof Error?err.message:"读取影视库失败");}
+  finally{setLoadingHome(false);}
+ }
+ async function search(term:string,start=0) {
+  const api=window.go?.main?.App;if(!api)throw new Error("当前不是 Wails 桌面运行环境");
+  setLoadingHome(true);setError("");
+  try {const result=await api.Search(term,start,30);setPage(result);setPageIndex(start);setQuery(term);setSection("search");}
+  catch(err){setError(err instanceof Error?err.message:"搜索失败");}
+  finally{setLoadingHome(false);}
+ }
+ async function openDetail(item:MediaItem) {
+  setDetailLoading(true);setDetail(item);
+  try {const full=await window.go?.main?.App?.GetItem(item.id);if(full)setDetail(full);}
+  catch(err){setError(err instanceof Error?err.message:"读取详情失败");}
+  finally{setDetailLoading(false);}
  }
  async function connect(e:FormEvent) {
   e.preventDefault();setBusy(true);setError("");setConnected("");setHome(null);
