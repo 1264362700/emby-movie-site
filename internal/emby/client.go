@@ -77,11 +77,16 @@ func (c *Client) Views(serverURL, token, userID string) ([]View, error) {
 	err := c.get(serverURL, token, "/Users/"+url.PathEscape(userID)+"/Views", nil, &result)
 	return result.Items, err
 }
-func (c *Client) Items(serverURL, token, userID string, query url.Values) ([]Item, error) {
-	var result ItemResult
-	err := c.get(serverURL, token, "/Users/"+url.PathEscape(userID)+"/Items", query, &result)
-	return result.Items, err
+func (c *Client) ItemsWithTotal(serverURL, token, userID string, query url.Values) ([]Item, int, error) {
+ var result ItemResult
+ err := c.get(serverURL, token, "/Users/"+url.PathEscape(userID)+"/Items", query, &result)
+ return result.Items, result.TotalRecordCount, err
 }
+func (c *Client) Items(serverURL, token, userID string, query url.Values) ([]Item, error) {
+ items, _, err := c.ItemsWithTotal(serverURL, token, userID, query)
+ return items, err
+}
+
 func (c *Client) ImageURL(serverURL, token, itemID, tag string) string {
 	if tag == "" { return "" }
 	q := url.Values{"maxWidth":{"480"}, "quality":{"85"}, "tag":{tag}, "api_key":{token}}
