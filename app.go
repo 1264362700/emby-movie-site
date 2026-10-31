@@ -14,6 +14,8 @@ type App struct {
  token string
  serverURL string
  userID string
+ serverName string
+ userName string
 }
 func NewApp() *App { return &App{client:emby.NewClient()} }
 func (a *App) startup(ctx context.Context) { a.ctx=ctx }
@@ -45,6 +47,7 @@ func (a *App) Connect(serverURL, username, password string) (ConnectResult,error
  if serverURL==""||username==""||password=="" { return ConnectResult{},errors.New("请填写 Emby 地址、用户名和密码") }
  result,err:=a.client.Authenticate(serverURL,username,password);if err!=nil{return ConnectResult{},err}
  a.token,a.serverURL,a.userID=result.Token,serverURL,result.UserID
+ a.serverName,a.userName=result.ServerName,result.UserName
  return ConnectResult{ServerName:result.ServerName,UserName:result.UserName,UserID:result.UserID},nil
 }
 func imageURL(serverURL,token,itemID,tag string) string {
@@ -67,5 +70,5 @@ func (a *App) LoadHome() (HomeData,error) {
  latest,err:=a.client.Items(a.serverURL,a.token,a.userID,latestQuery);if err!=nil{return HomeData{},err}
  resumeQuery:=url.Values{"Recursive":{"true"},"Filters":{"IsResumable"},"IncludeItemTypes":{"Movie,Episode"},"SortBy":{"DatePlayed"},"SortOrder":{"Descending"},"Limit":{"12"},"Fields":{"Overview,ProductionYear,CommunityRating,PlaybackPositionTicks,RunTimeTicks"}}
  resume,resumeErr:=a.client.Items(a.serverURL,a.token,a.userID,resumeQuery);if resumeErr!=nil { resume=[]emby.Item{} }
- return HomeData{ServerName:"Emby",Views:views,Latest:mapItems(latest,a.serverURL,a.token),Resume:mapItems(resume,a.serverURL,a.token)},nil
+ return HomeData{ServerName:a.serverName,UserName:a.userName,Views:views,Latest:mapItems(latest,a.serverURL,a.token),Resume:mapItems(resume,a.serverURL,a.token)},nil
 }
