@@ -17,17 +17,19 @@ declare global {
  }
 }
 
-function MediaCard({item}: {item:MediaItem}) {
- return <article className="media-card">
-  <div className="poster">{item.imageUrl ? <img src={item.imageUrl} loading="lazy" alt={item.name}/> : <div className="poster-fallback"><Clapperboard size={28}/></div>}
+function MediaCard({item,onOpen}: {item:MediaItem;onOpen:(item:MediaItem)=>void}) {
+ const [poster,setPoster]=useState("");
+ useEffect(()=>{let active=true;if(item.imageTag){window.go?.main?.App?.GetImageData(item.id,item.imageTag).then(src=>{if(active)setPoster(src)}).catch(()=>{});}return ()=>{active=false}},[item.id,item.imageTag]);
+ return <article className="media-card" onClick={()=>onOpen(item)}>
+  <div className="poster">{poster ? <img src={poster} loading="lazy" alt={item.name}/> : <div className="poster-fallback"><Clapperboard size={28}/></div>}
    {item.rating>0 && <span className="rating"><Star size={11} fill="currentColor"/> {item.rating.toFixed(1)}</span>}
   </div>
   <div className="media-title">{item.name}</div><div className="media-meta">{item.year || "年份未知"}{item.type==="Series"?" · 剧集":item.type==="Episode"?" · 单集":" · 电影"}</div>
  </article>;
 }
-function MediaRow({title,subtitle,items}: {title:string;subtitle:string;items:MediaItem[]}) {
+function MediaRow({title,subtitle,items,onOpen}: {title:string;subtitle:string;items:MediaItem[];onOpen:(item:MediaItem)=>void}) {
  return <section className="media-section"><div className="media-heading"><div><h2>{title}</h2><p>{subtitle}</p></div><span>{items.length} 部</span></div>
-  {items.length ? <div className="media-grid">{items.map(item=><MediaCard key={item.id} item={item}/>)}</div> : <div className="empty-state">暂时没有内容</div>}
+  {items.length ? <div className="media-grid">{items.map(item=><MediaCard key={item.id} item={item} onOpen={onOpen}/>)}</div> : <div className="empty-state">暂时没有内容</div>}
  </section>;
 }
 
