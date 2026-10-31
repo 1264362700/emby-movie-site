@@ -22,5 +22,7 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
+      - name: Resolve Go dependencies
+        run: go mod tidy
       - name: Test Go packages
         run: go test ./...
