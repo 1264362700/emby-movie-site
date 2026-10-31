@@ -11,6 +11,7 @@ import (
 type App struct {
 	ctx context.Context
 	client *emby.Client
+	token string
 }
 
 func NewApp() *App { return &App{client: emby.NewClient()} }
@@ -29,5 +30,6 @@ func (a *App) Connect(serverURL, username, password string) (ConnectResult, erro
 	}
 	result, err := a.client.Authenticate(serverURL, username, password)
 	if err != nil { return ConnectResult{}, err }
+	a.token = result.Token
 	return ConnectResult{ServerName: result.ServerName, UserName: result.UserName, UserID: result.UserID}, nil
 }
