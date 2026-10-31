@@ -83,8 +83,8 @@ func (a *App) Browse(kind, parentID string, start, limit int, sortBy, sortOrder 
  if kind=="Movie"{q.Set("IncludeItemTypes","Movie")}else if kind=="Series"{q.Set("IncludeItemTypes","Series")}else{q.Set("IncludeItemTypes","Movie,Series")}
  if sortBy==""{sortBy="SortName"};if sortOrder==""{sortOrder="Ascending"}
  q.Set("SortBy",sortBy);q.Set("SortOrder",sortOrder)
- items,err:=a.client.Items(a.serverURL,a.token,a.userID,q);if err!=nil{return MediaPage{},err}
- return MediaPage{Items:mapItems(items),Total:len(items),Start:start,Limit:limit},nil
+ items,total,err:=a.client.ItemsWithTotal(a.serverURL,a.token,a.userID,q);if err!=nil{return MediaPage{},err}
+ return MediaPage{Items:mapItems(items),Total:total,Start:start,Limit:limit},nil
 }
 func (a *App) Search(term string, start, limit int) (MediaPage,error) {
  if err:=a.requireSession();err!=nil{return MediaPage{},err}
