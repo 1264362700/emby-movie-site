@@ -91,8 +91,8 @@ func (a *App) Search(term string, start, limit int) (MediaPage,error) {
  term=strings.TrimSpace(term);if term==""{return MediaPage{Items:[]MediaItem{},Total:0,Start:0,Limit:limit},nil}
  if limit<1||limit>100{limit=30};if start<0{start=0}
  q:=url.Values{"Recursive":{"true"},"SearchTerm":{term},"IncludeItemTypes":{"Movie,Series,Episode"},"StartIndex":{fmt.Sprint(start)},"Limit":{fmt.Sprint(limit)},"SortBy":{"SortName"},"SortOrder":{"Ascending"},"Fields":{"Overview,ProductionYear,CommunityRating"}}
- items,err:=a.client.Items(a.serverURL,a.token,a.userID,q);if err!=nil{return MediaPage{},err}
- return MediaPage{Items:mapItems(items),Total:len(items),Start:start,Limit:limit},nil
+ items,total,err:=a.client.ItemsWithTotal(a.serverURL,a.token,a.userID,q);if err!=nil{return MediaPage{},err}
+ return MediaPage{Items:mapItems(items),Total:total,Start:start,Limit:limit},nil
 }
 func (a *App) GetImageData(itemID, tag string) (string,error) {
  if err:=a.requireSession();err!=nil{return "",err}
