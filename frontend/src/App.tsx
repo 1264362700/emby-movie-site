@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Clapperboard, Search, House, Film, Tv, Settings, Play, Server, LoaderCircle } from "lucide-react";
 
 declare global {
@@ -15,7 +15,7 @@ export default function App() {
   const [connected, setConnected] = useState("");
   const [error, setError] = useState("");
 
-  async function connect(e: React.FormEvent) {
+  async function connect(e: FormEvent) {
     e.preventDefault(); setBusy(true); setError(""); setConnected("");
     try {
       const api = window.go?.main?.App;
