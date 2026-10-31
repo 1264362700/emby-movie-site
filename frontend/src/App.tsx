@@ -1,7 +1,7 @@
 import { useState, useEffect, type FormEvent } from "react";
 import { Clapperboard, Search, House, Film, Tv, Settings, Play, Server, LoaderCircle, Wifi, Star, RotateCcw } from "lucide-react";
 
-type MediaItem = { id:string; name:string; type:string; overview:string; year:number; rating:number; imageUrl:string; seriesName:string };
+type MediaItem = { id:string; name:string; type:string; overview:string; year:number; rating:number; imageTag:string; seriesName:string };
 type HomeData = { serverName:string; userName:string; views:Array<{ID:string;Name:string;CollectionType:string}>; latest:MediaItem[]; resume:MediaItem[] };
 type MediaPage = {items:MediaItem[];total:number;start:number;limit:number};
 declare global {
