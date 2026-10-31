@@ -79,11 +79,11 @@ export default function App() {
  return <div className="shell">
   <aside className="sidebar">
    <div className="brand"><span className="brand-icon"><Clapperboard size={21}/></span><span>EMBER<span className="brand-light"> CINEMA</span></span></div>
-   <div className="nav-label">媒体空间</div><a className="nav active"><House size={18}/> 首页</a><a className="nav"><Film size={18}/> 电影</a><a className="nav"><Tv size={18}/> 电视剧</a>
+   <div className="nav-label">媒体空间</div><button className={"nav "+(section==="home"?"active":"")} onClick={()=>setSection("home")}><House size={18}/> 首页</button><button className={"nav "+(section==="Movie"?"active":"")} onClick={()=>browse("Movie")}><Film size={18}/> 电影</button><button className={"nav "+(section==="Series"?"active":"")} onClick={()=>browse("Series")}><Tv size={18}/> 电视剧</button>
    <div className="sidebar-bottom"><a className="nav"><Settings size={18}/> 设置</a><div className="server-state"><span className={home?"dot online":"dot"}/>{home?"已连接 Emby":"尚未连接服务器"}</div></div>
   </aside>
   <main className="main">
-   <header className="topbar"><div className="crumb">你的私人影院 <span>/</span> 首页</div><div className="top-actions">{home&&<span className="connected-pill"><Wifi size={13}/> {home.serverName}</span>}<button className="icon-button" title="搜索"><Search size={19}/></button></div></header>
+   <header className="topbar"><div className="crumb">你的私人影院 <span>/</span> {section==="home"?"首页":section==="Movie"?"电影":section==="Series"?"电视剧":"搜索"}</div><div className="top-actions">{home&&<span className="connected-pill"><Wifi size={13}/> {home.serverName}</span>}<form className="search-form" onSubmit={e=>{e.preventDefault();if(searchInput.trim())search(searchInput.trim());}}><input aria-label="搜索影视" value={searchInput} onChange={e=>setSearchInput(e.target.value)} placeholder="搜索片名、剧集…"/><button className="icon-button" title="搜索"><Search size={19}/></button></form></div></header>
    {!home ? <>
     <section className="hero">
      <div className="hero-copy"><div className="eyebrow">YOUR PERSONAL CINEMA</div><h1>把热爱，<br/><em>留在私人影院。</em></h1><p>连接你的 Emby 媒体服务器，开始探索私人收藏。</p><a className="hero-link" href="#connect"><Play size={15} fill="currentColor"/> 开始连接 <span>↗</span></a></div>
@@ -103,10 +103,12 @@ export default function App() {
    </> : <>
     <section className="welcome-banner"><div><div className="eyebrow">WELCOME BACK</div><h1>今晚，想看点什么？</h1><p>已连接到 {home.serverName}，你的私人片库已就绪。</p></div><button className="refresh-button" onClick={()=>loadHome()} disabled={loadingHome}>{loadingHome?<LoaderCircle className="spin" size={16}/>:<RotateCcw size={16}/>} 刷新媒体库</button></section>
     <section className="library-stats">{home.views.map(v=><div className="library-chip" key={v.ID}><Film size={15}/><span>{v.Name}</span></div>)}{home.views.length===0&&<span className="muted">服务器尚未返回媒体库分类</span>}</section>
-    {home.resume.length>0&&<MediaRow title="继续观看" subtitle="接着上次的进度，继续你的故事" items={home.resume}/>}
-    <MediaRow title="最近添加" subtitle="你的媒体库刚刚上新" items={home.latest}/>
+    {home.resume.length>0&&<MediaRow title="继续观看" subtitle="接着上次的进度，继续你的故事" items={home.resume} onOpen={openDetail}/>}
+    <MediaRow title="最近添加" subtitle="你的媒体库刚刚上新" items={home.latest} onOpen={openDetail}/>
     {error&&<p className="error">{error}</p>}
    </>}
+   {home&&section!=="home"&&<section className="library-page"><div className="welcome-banner"><div><div className="eyebrow">{section==="search"?"SEARCH LIBRARY":"YOUR COLLECTION"}</div><h1>{section==="search"?"搜索结果":section==="Movie"?"电影片库":"电视剧片库"}</h1><p>{section==="search"?"关键词："+query:"浏览 Emby 服务器中的媒体收藏"}</p></div><span className="result-count">{page?.total??0} 项结果</span></div>{loadingHome?<div className="empty-state">正在读取…</div>:page?.items.length?<div className="media-grid browse-grid">{page.items.map(item=><MediaCard key={item.id} item={item} onOpen={openDetail}/>)}</div>:<div className="empty-state">没有找到匹配内容</div>}{page&&<div className="pagination"><button disabled={pageIndex===0||loadingHome} onClick={()=>section==="search"?search(query,Math.max(0,pageIndex-30)):browse(section as "Movie"|"Series",Math.max(0,pageIndex-30))}>上一页</button><span>第 {Math.floor(pageIndex/30)+1} 页 · 本页 {page.items.length} 项</span><button disabled={page.items.length<30||loadingHome} onClick={()=>section==="search"?search(query,pageIndex+30):browse(section as "Movie"|"Series",pageIndex+30)}>下一页</button></div>}</section>}
+   {detail&&<div className="modal-backdrop" onClick={()=>setDetail(null)}><section className="detail-modal" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setDetail(null)}>×</button><div className="eyebrow">MEDIA DETAILS</div><h2>{detail.name}</h2><p className="detail-meta">{detail.year||"年份未知"} · {detail.type==="Series"?"电视剧":detail.type==="Episode"?"剧集":"电影"} {detail.rating>0?" · ★ "+detail.rating.toFixed(1):""}</p><p className="detail-overview">{detailLoading?"正在读取详情…":detail.overview||"暂无简介"}</p></section></div>}
    <footer>EMBER CINEMA <span>·</span> A PERSONAL MEDIA EXPERIENCE</footer>
   </main>
  </div>;
